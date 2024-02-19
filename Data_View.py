@@ -73,14 +73,10 @@ if 'df' in st.session_state:
 
                 if st.checkbox(f"Utiliser log({column}) pour l'axe Y"):
                     try:
-                        # Convertir les données en types numériques si nécessaire
-                        df_visualize[column] = pd.to_numeric(df_visualize[column], errors='coerce')
-                        # Vérifier si toutes les valeurs de la colonne sont positives
-                        if (df_visualize[column] > 0).all():
-                            fig.add_trace(go.Scatter(x=df_visualize[x_column], y=np.log(df_visualize[column]), mode='lines',
-                                                    name=f"log({column})", line=dict(color=color, dash=line_style)))
-                        else:
-                            st.warning(f"Impossible d'appliquer log({column}) car certaines valeurs sont nulles ou négatives.")
+                        # Filtrer les valeurs positives dans la colonne sélectionnée
+                        df_positive_values = df_visualize[df_visualize[column] > 0]
+                        fig.add_trace(go.Scatter(x=df_positive_values[x_column], y=np.log(df_positive_values[column]), mode='lines',
+                                                name=f"log({column})", line=dict(color=color, dash=line_style)))
                     except KeyError:
                         st.error(f"La colonne {column} n'existe pas dans le DataFrame.")
                     except Exception as e:
