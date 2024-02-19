@@ -72,12 +72,17 @@ if 'df' in st.session_state:
                 line_style = st.selectbox(f"Style de ligne pour {column}", line_styles)
 
                 if st.checkbox(f"Utiliser log({column}) pour l'axe Y"):
-                    # Vérifier si toutes les valeurs de la colonne sont positives
-                    if (df_visualize[column] > 0).all():
-                        fig.add_trace(go.Scatter(x=df_visualize[x_column], y=np.log(df_visualize[column]), mode='lines',
-                                                name=f"log({column})", line=dict(color=color, dash=line_style)))
-                    else:
-                        st.warning(f"Impossible d'appliquer log({column}) car certaines valeurs sont nulles ou négatives.")
+                    try:
+                        # Vérifier si toutes les valeurs de la colonne sont positives
+                        if (df_visualize[column] > 0).all():
+                            fig.add_trace(go.Scatter(x=df_visualize[x_column], y=np.log(df_visualize[column]), mode='lines',
+                                                    name=f"log({column})", line=dict(color=color, dash=line_style)))
+                        else:
+                            st.warning(f"Impossible d'appliquer log({column}) car certaines valeurs sont nulles ou négatives.")
+                    except KeyError:
+                        st.error(f"La colonne {column} n'existe pas dans le DataFrame.")
+                    except Exception as e:
+                        st.error(f"Une erreur s'est produite : {e}")
                 else:
                     fig.add_trace(go.Scatter(x=df_visualize[x_column], y=df_visualize[column], mode='lines',
                                             name=column, line=dict(color=color, dash=line_style)))
