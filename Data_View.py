@@ -73,10 +73,20 @@ if 'df' in st.session_state:
 
                 if st.checkbox(f"Utiliser log({column}) pour l'axe Y"):
                     try:
-                        # Filtrer les valeurs positives dans la colonne sélectionnée
-                        df_positive_values = df_visualize[df_visualize[column] > 0]
-                        fig.add_trace(go.Scatter(x=df_positive_values[x_column], y=np.log(df_positive_values[column]), mode='lines',
-                                                name=f"log({column})", line=dict(color=color, dash=line_style)))
+                        # Vérifier le type de données de la colonne
+                        if df_visualize[column].dtype == 'object':
+                            # Convertir les valeurs de la colonne en numériques si ce sont des chaînes de caractères
+                            df_visualize[column] = pd.to_numeric(df_visualize[column], errors='coerce')
+
+                        # Supprimer les valeurs nulles ou négatives de la colonne
+                        df_visualize = df_visualize[(df_visualize[column] > 0)]
+
+                        # Vérifier si la colonne est vide après la suppression des valeurs nulles ou négatives
+                        if not df_visualize.empty:
+                            fig.add_trace(go.Scatter(x=df_visualize[x_column], y=np.log(df_visualize[column]), mode='lines',
+                                                    name=f"log({column})", line=dict(color=color, dash=line_style)))
+                        else:
+                            st.warning(f"La colonne {column} est vide après la suppression des valeurs nulles ou négatives.")
                     except KeyError:
                         st.error(f"La colonne {column} n'existe pas dans le DataFrame.")
                     except Exception as e:
@@ -149,8 +159,6 @@ if 'df' in st.session_state:
                 title=graph_title,
                 xaxis_title=x_axis_title,
                 yaxis_title=y_axis_title,
-                # xaxis=dict(showgrid=show_grid, gridcolor=grid_color if show_grid else None),
-                # yaxis=dict(showgrid=show_grid, gridcolor=grid_color if show_grid else None),
                 plot_bgcolor=bg_color,  # Couleur de fond du graphique
                 autosize=False,  # Désactiver l'autosize pour spécifier les dimensions
                 width=500,  # Largeur du graphique
